@@ -7,7 +7,7 @@
  */
 
 import { existsSync } from 'node:fs';
-import { rm, mkdir, cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { rm, mkdir, cp, mkdtemp, readFile, writeFile, rename } from 'node:fs/promises';
 import { resolve, basename, extname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -63,6 +63,13 @@ async function main() {
 		await writeFile(join(tmpDest, '_template.json'), meta);
 	}
 
+	// npm strips .gitignore from tarballs — rename it so it survives publishing.
+	// The runtime copy-template step renames it back.
+	const gitignorePath = join(tmpDest, '.gitignore');
+	if (existsSync(gitignorePath)) {
+		await rename(gitignorePath, join(tmpDest, '_gitignore'));
+	}
+
 	// Copy from temp to final location (can't rename across devices)
 	const finalDest = join(TEMPLATES_OUT, 'default');
 	await cp(tmpDest, finalDest, { recursive: true });
@@ -70,7 +77,14 @@ async function main() {
 	// Cleanup temp dir
 	await rm(tmpDir, { recursive: true }).catch(() => {});
 
+	// Copy the root README.md as the npm package README
+	const readmeSrc = resolve(REPO_ROOT, 'README.md');
+	if (existsSync(readmeSrc)) {
+		await cp(readmeSrc, resolve(PACKAGE_ROOT, 'README.md'));
+	}
+
 	console.log('  ✓ Copied template: default');
+	console.log('  ✓ Copied README.md');
 	console.log(`\nTemplates ready in ${TEMPLATES_OUT}`);
 }
 

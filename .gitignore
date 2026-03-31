@@ -25,3 +25,4 @@ packages/create-svelte-scorm/templates/
 *.njsproj
 *.sln
 *.sw?
+scorm-packages

@@ -1,5 +1,6 @@
-import { cp } from 'node:fs/promises';
-import { basename, extname } from 'node:path';
+import { existsSync } from 'node:fs';
+import { cp, rename } from 'node:fs/promises';
+import { basename, extname, join } from 'node:path';
 
 /** Directory and file names to always exclude */
 const EXCLUDED_NAMES = new Set([
@@ -33,4 +34,11 @@ export async function copyTemplate(src, dest) {
 			return true;
 		}
 	});
+
+	// npm strips .gitignore from tarballs, so the prepublish script renames it
+	// to _gitignore. Rename it back after copying.
+	const underscoreGitignore = join(dest, '_gitignore');
+	if (existsSync(underscoreGitignore)) {
+		await rename(underscoreGitignore, join(dest, '.gitignore'));
+	}
 }
