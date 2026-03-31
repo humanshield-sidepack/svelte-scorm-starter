@@ -1,10 +1,16 @@
 {
 	"name": "create-svelte-scorm",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Scaffold a Svelte SCORM e-learning project",
 	"repository": {
 		"url": "https://github.com/humanshield-sidepack/svelte-scorm-starter",
 		"type": "git"
+	},
+	"homepage": "https://github.com/humanshield-sidepack/svelte-scorm-starter/blob/master/README.md",
+	"author": {
+		"name": "Rachid Boudjelida",
+		"email": "rachidboudjelida@gmail.com",
+		"url": "https://rachidboudjelida.com"
 	},
 	"type": "module",
 	"bin": {
