@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { resolve, join, basename } from 'node:path';
 import { execSync } from 'node:child_process';
@@ -91,27 +91,15 @@ export async function main(args) {
 		projectName = await ask('Project name', 'my-scorm-course');
 	}
 
-	// Resolve "." to current directory
-	const isCurrentDir = projectName === '.';
-	const targetDir = resolve(process.cwd(), projectName);
-
-	// Derive the package name from the directory name when using "."
-	const pkgName = isCurrentDir ? basename(targetDir) : projectName;
-
-	// Validate package name
-	if (!pkgName || !/^[a-z0-9@][a-z0-9._\-/@]*$/i.test(pkgName)) {
-		throw new Error(`Invalid project name: "${pkgName}"`);
+	// Validate project name
+	if (!projectName || !/^[a-z0-9@][a-z0-9._\-/@]*$/i.test(projectName)) {
+		throw new Error(`Invalid project name: "${projectName}"`);
 	}
 
-	if (isCurrentDir) {
-		// Allow "." but only if the directory is empty (or doesn't exist yet)
-		if (existsSync(targetDir)) {
-			const entries = readdirSync(targetDir).filter((e) => e !== '.git');
-			if (entries.length > 0) {
-				throw new Error(`Directory "${targetDir}" is not empty.`);
-			}
-		}
-	} else if (existsSync(targetDir)) {
+	const targetDir = resolve(process.cwd(), projectName);
+
+	// Check target doesn't exist
+	if (existsSync(targetDir)) {
 		throw new Error(`Directory "${projectName}" already exists.`);
 	}
 
@@ -146,7 +134,7 @@ export async function main(args) {
 	console.log(`  ${green('✓')} Copied template: ${template.name}`);
 
 	// Patch package.json
-	await patchPackageJson(targetDir, pkgName);
+	await patchPackageJson(targetDir, projectName);
 	console.log(`  ${green('✓')} Updated package.json`);
 
 	// Git init
@@ -170,11 +158,11 @@ export async function main(args) {
 	}
 
 	// Done!
-	const cdHint = isCurrentDir ? '' : `  ${bold('cd')} ${projectName}\n`;
 	console.log(`
 ${green('Done!')} Your project is ready.
 
-${cdHint}  ${bold(`${pm} run dev`)}
+  ${bold('cd')} ${projectName}
+  ${bold(`${pm} run dev`)}
 
 Happy building! 🎓
 `);

@@ -26,3 +26,4 @@ packages/create-svelte-scorm/templates/
 *.sln
 *.sw?
 scorm-packages
+*.tgz
